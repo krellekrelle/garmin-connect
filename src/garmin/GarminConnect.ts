@@ -22,7 +22,10 @@ import {
     IWorkout,
     IWorkoutDetail,
     UploadFileType,
-    UploadFileTypeTypeValue
+    UploadFileTypeTypeValue,
+    IDevice,
+    IDeviceMessage,
+    IWorkoutDevice
 } from './types';
 import Running from './workouts/Running';
 import {
@@ -548,5 +551,118 @@ export default class GarminConnect {
     async put<T>(url: string, data: any) {
         const response = await this.client.put<T>(url, data, {});
         return response as T;
+    }
+
+    // Device management methods
+    /**
+     * Get all connected devices
+     */
+    async getDevices(): Promise<IDevice[]> {
+        try {
+            const devices = await this.client.get<IDevice[]>(this.url.DEVICES);
+            return devices || [];
+        } catch (error: any) {
+            throw new Error(`Error getting devices: ${error.message}`);
+        }
+    }
+
+    /**
+     * Get workout-capable devices only
+     */
+    async getWorkoutDevices(): Promise<IDevice[]> {
+        const devices = await this.getDevices();
+        return devices.filter(device => 
+            (device as any).workoutCapable === true
+        );
+    }
+
+    /**
+     * Push workout to a specific device
+     */
+    async pushWorkoutToDevice(
+        workout: { workoutId: string }, 
+        deviceId: string,
+        workoutName?: string
+    ): Promise<any> {
+        if (!workout.workoutId) {
+            throw new Error('Missing workoutId');
+        }
+
+        // Based on real Garmin Connect API from research
+        const message = {
+            deviceId: parseInt(deviceId),
+            messageUrl: `workout-service/workout/FIT/${workout.workoutId}`,
+            messageType: 'workouts',
+            messageName: workoutName || 'Training Workout',
+            groupName: null,
+            priority: 1,
+            fileType: 'FIT',
+            metaDataId: parseInt(workout.workoutId)
+        };
+
+        try {
+            const response = await this.client.post(
+                this.url.DEVICE_MESSAGES,
+                [message] // API expects an array
+            );
+
+            console.log('✅ Workout pushed to device:', {
+                workoutId: workout.workoutId,
+                deviceId: deviceId,
+                workoutName: message.messageName
+            });
+
+            return response;
+        } catch (error: any) {
+            console.error('❌ Failed to push workout to device:', error);
+            throw new Error(`Error pushing workout to device: ${error.message}`);
+        }
+    }
+
+    /**
+     * Push workout to all workout-capable devices
+     */
+    async pushWorkoutToAllDevices(
+        workout: { workoutId: string },
+        workoutName?: string
+    ): Promise<any[]> {
+        const devices = await this.getWorkoutDevices();
+        
+        if (devices.length === 0) {
+            throw new Error('No workout-capable devices found');
+        }
+
+        const results = await Promise.all(
+            devices.map(device =>
+                this.pushWorkoutToDevice(workout, device.deviceId, workoutName)
+            )
+        );
+
+        return results;
+    }
+
+    /**
+     * Get device messages/sync status
+     */
+    async getDeviceMessages(deviceId?: string): Promise<IDeviceMessage[]> {
+        try {
+            const params = deviceId ? { deviceId } : {};
+            const response = await this.client.get(
+                this.url.DEVICE_MESSAGES,
+                { params }
+            );
+            
+            // Ensure we return an array
+            if (Array.isArray(response)) {
+                return response;
+            } else if (response && (response as any).messages && Array.isArray((response as any).messages)) {
+                return (response as any).messages;
+            } else {
+                return [];
+            }
+        } catch (error: any) {
+            console.log('No device messages found or error:', error.message);
+            return [];
+        }
     }
 }
