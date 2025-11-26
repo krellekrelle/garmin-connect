@@ -98,4 +98,17 @@ export class UrlClass {
     get WORKOUTS() {
         return `${this.GC_API}/workout-service/workouts`;
     }
+
+    // Device sync endpoints based on real Garmin Connect API
+    get DEVICES() {
+        return `${this.GC_API}/device-service/deviceregistration/devices`;
+    }
+
+    get DEVICE_MESSAGES() {
+        return `${this.GC_API}/device-service/devicemessage/messages`;
+    }
+
+    WORKOUT_SCHEDULE(workoutId: GCWorkoutId) {
+        return `${this.GC_API}/workout-service/schedule/${workoutId}`;
+    }
 }

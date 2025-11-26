@@ -394,6 +394,25 @@ export interface ISportType {
     displayOrder?: number;
 }
 
+export interface IWorkoutSchedule {
+    workoutScheduleId: number;
+    workout: IWorkoutDetail;
+    calendarDate: string;
+    createdDate: string;
+    ownerId: number;
+    newName: string | null;
+    consumer: any | null;
+    atpPlanTypeId: number | null;
+    associatedActivityId: number | null;
+    priority: number | null;
+    associatedActivityDateTime: string | null;
+    tpType: string | null;
+    race: boolean;
+    protected: boolean;
+    itp: boolean;
+    nameChanged: boolean;
+}
+
 export interface IWorkoutSegment {
     segmentOrder: number;
     sportType: ISportType;
@@ -470,4 +489,71 @@ export interface IDailyStepsType {
     stepGoal: number;
     totalDistance: number;
     totalSteps: number;
+}
+
+// Device sync types based on real Garmin Connect API responses
+export type GCDeviceId = string;
+
+export interface IDeviceCapabilities {
+    accelerometer?: boolean;
+    activityDetection?: boolean;
+    appTypes?: string[];
+    bluetoothClassicSupported?: boolean;
+    bluetoothLowEnergySupported?: boolean;
+    dataFieldTypes?: string[];
+    gps?: boolean;
+    heartRateMonitor?: boolean;
+    swimProof?: boolean;
+    touchScreen?: boolean;
+    wifiCapable?: boolean;
+    workoutFeatures?: string[];
+}
+
+export interface IDevice {
+    deviceId: GCDeviceId;
+    displayName: string;
+    deviceTypePk: number;
+    deviceTypeDisplayName: string;
+    batteryStatus?: string;
+    batteryLevel?: number;
+    lastSyncTime?: string;
+    firmwareVersion?: string;
+    capabilities?: IDeviceCapabilities;
+    softwareVersion?: string;
+    partnumber?: string;
+    primaryDevice?: boolean;
+    imageName?: string;
+    smallImageName?: string;
+    largeImageName?: string;
+    connectionType?: 'BLUETOOTH' | 'WIFI' | 'USB';
+    bluetoothAddress?: string;
+    softwareUpdateAvailable?: boolean;
+    syncCapable?: boolean;
+}
+
+export interface IDeviceMessage {
+    messageId?: string;
+    deviceId: GCDeviceId;
+    messageType: string;
+    groupType?: string;
+    fileType?: string;
+    priority?: number;
+    data?: any;
+    createdDate?: string;
+    delivered?: boolean;
+    processed?: boolean;
+}
+
+export interface IWorkoutDevice {
+    workoutId: string;
+    deviceId: GCDeviceId;
+    messageType: 'WORKOUT';
+    groupType: 'FITNESS';
+    fileType: 'WORKOUT';
+    priority: number;
+    data: {
+        workoutId: string;
+        workoutName?: string;
+        sport?: string;
+    };
 }
