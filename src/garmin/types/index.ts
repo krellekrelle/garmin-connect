@@ -471,3 +471,70 @@ export interface IDailyStepsType {
     totalDistance: number;
     totalSteps: number;
 }
+
+export type GCDeviceId = string;
+
+export interface IDeviceCapabilities {
+    accelerometer?: boolean;
+    activityDetection?: boolean;
+    appTypes?: string[];
+    bluetoothClassicSupported?: boolean;
+    bluetoothLowEnergySupported?: boolean;
+    dataFieldTypes?: string[];
+    gps?: boolean;
+    heartRateMonitor?: boolean;
+    swimProof?: boolean;
+    touchScreen?: boolean;
+    wifiCapable?: boolean;
+    workoutFeatures?: string[];
+}
+
+export interface IDevice {
+    deviceId: GCDeviceId;
+    displayName: string;
+    deviceTypePk: number;
+    deviceTypeDisplayName: string;
+    batteryStatus?: string;
+    batteryLevel?: number;
+    lastSyncTime?: string;
+    firmwareVersion?: string;
+    capabilities?: IDeviceCapabilities;
+    softwareVersion?: string;
+    partnumber?: string;
+    primaryDevice?: boolean;
+    imageName?: string;
+    smallImageName?: string;
+    largeImageName?: string;
+    connectionType?: 'BLUETOOTH' | 'WIFI' | 'USB';
+    bluetoothAddress?: string;
+    softwareUpdateAvailable?: boolean;
+    syncCapable?: boolean;
+}
+
+export interface IDeviceMessage {
+    messageId?: string;
+    deviceId: GCDeviceId;
+    messageType: string;
+    groupType?: string;
+    fileType?: string;
+    priority?: number;
+    data?: any;
+    createdDate?: string;
+    delivered?: boolean;
+    processed?: boolean;
+}
+
+export interface IWorkoutDevice {
+    workoutId: string;
+    deviceId: GCDeviceId;
+    messageType: 'WORKOUT';
+    groupType: 'FITNESS';
+    fileType: 'WORKOUT';
+    priority: number;
+    data: {
+        workoutId: string;
+        workoutName?: string;
+        sport?: string;
+    };
+}
+
