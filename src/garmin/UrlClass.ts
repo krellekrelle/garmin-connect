@@ -112,3 +112,5 @@ export class UrlClass {
         return `${this.GC_API}/workout-service/schedule/${workoutId}`;
     }
 }
+
+

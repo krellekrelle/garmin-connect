@@ -557,3 +557,4 @@ export interface IWorkoutDevice {
         sport?: string;
     };
 }
+
