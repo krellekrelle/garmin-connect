@@ -394,6 +394,25 @@ export interface ISportType {
     displayOrder?: number;
 }
 
+export interface IWorkoutSchedule {
+    workoutScheduleId: number;
+    workout: IWorkoutDetail;
+    calendarDate: string;
+    createdDate: string;
+    ownerId: number;
+    newName: string | null;
+    consumer: any | null;
+    atpPlanTypeId: number | null;
+    associatedActivityId: number | null;
+    priority: number | null;
+    associatedActivityDateTime: string | null;
+    tpType: string | null;
+    race: boolean;
+    protected: boolean;
+    itp: boolean;
+    nameChanged: boolean;
+}
+
 export interface IWorkoutSegment {
     segmentOrder: number;
     sportType: ISportType;
@@ -472,6 +491,7 @@ export interface IDailyStepsType {
     totalSteps: number;
 }
 
+// Device sync types based on real Garmin Connect API responses
 export type GCDeviceId = string;
 
 export interface IDeviceCapabilities {

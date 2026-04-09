@@ -21,6 +21,7 @@ import {
     IUserSettings,
     IWorkout,
     IWorkoutDetail,
+    IWorkoutSchedule,
     UploadFileType,
     UploadFileTypeTypeValue,
     IDevice,
@@ -324,6 +325,46 @@ export default class GarminConnect {
         return this.client.delete(this.url.WORKOUT(workout.workoutId));
     }
 
+    /**
+     * Schedule a workout to a specific date
+     * @param workout - Workout object with workoutId
+     * @param date - Date to schedule the workout (can be Date object or string in format 'YYYY-MM-DD')
+     * @returns Promise with the scheduled workout details
+     */
+    async scheduleWorkout(
+        workout: { workoutId: string },
+        date: Date | string
+    ): Promise<IWorkoutSchedule> {
+        if (!workout.workoutId) {
+            throw new Error('Missing workoutId');
+        }
+
+        // Convert date to YYYY-MM-DD format
+        let dateString: string;
+        if (date instanceof Date) {
+            dateString = toDateString(date);
+        } else {
+            dateString = date;
+        }
+
+        try {
+            const response = await this.client.post<IWorkoutSchedule>(
+                this.url.WORKOUT_SCHEDULE(workout.workoutId),
+                { date: dateString }
+            );
+
+            console.log('✅ Workout scheduled:', {
+                workoutId: workout.workoutId,
+                date: dateString,
+                scheduleId: response.workoutScheduleId
+            });
+
+            return response;
+        } catch (error: any) {
+            throw new Error(`Error scheduling workout: ${error.message}`);
+        }
+    }
+
     async getSteps(date = new Date()): Promise<number> {
         const dateString = toDateString(date);
 
@@ -571,8 +612,8 @@ export default class GarminConnect {
      */
     async getWorkoutDevices(): Promise<IDevice[]> {
         const devices = await this.getDevices();
-        return devices.filter(device => 
-            (device as any).workoutCapable === true
+        return devices.filter(
+            (device) => (device as any).workoutCapable === true
         );
     }
 
@@ -580,7 +621,7 @@ export default class GarminConnect {
      * Push workout to a specific device
      */
     async pushWorkoutToDevice(
-        workout: { workoutId: string }, 
+        workout: { workoutId: string },
         deviceId: string,
         workoutName?: string
     ): Promise<any> {
@@ -615,7 +656,9 @@ export default class GarminConnect {
             return response;
         } catch (error: any) {
             console.error('❌ Failed to push workout to device:', error);
-            throw new Error(`Error pushing workout to device: ${error.message}`);
+            throw new Error(
+                `Error pushing workout to device: ${error.message}`
+            );
         }
     }
 
@@ -627,13 +670,13 @@ export default class GarminConnect {
         workoutName?: string
     ): Promise<any[]> {
         const devices = await this.getWorkoutDevices();
-        
+
         if (devices.length === 0) {
             throw new Error('No workout-capable devices found');
         }
 
         const results = await Promise.all(
-            devices.map(device =>
+            devices.map((device) =>
                 this.pushWorkoutToDevice(workout, device.deviceId, workoutName)
             )
         );
@@ -647,15 +690,18 @@ export default class GarminConnect {
     async getDeviceMessages(deviceId?: string): Promise<IDeviceMessage[]> {
         try {
             const params = deviceId ? { deviceId } : {};
-            const response = await this.client.get(
-                this.url.DEVICE_MESSAGES,
-                { params }
-            );
-            
+            const response = await this.client.get(this.url.DEVICE_MESSAGES, {
+                params
+            });
+
             // Ensure we return an array
             if (Array.isArray(response)) {
                 return response;
-            } else if (response && (response as any).messages && Array.isArray((response as any).messages)) {
+            } else if (
+                response &&
+                (response as any).messages &&
+                Array.isArray((response as any).messages)
+            ) {
                 return (response as any).messages;
             } else {
                 return [];

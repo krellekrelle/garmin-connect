@@ -107,6 +107,10 @@ export class UrlClass {
     get DEVICE_MESSAGES() {
         return `${this.GC_API}/device-service/devicemessage/messages`;
     }
+
+    WORKOUT_SCHEDULE(workoutId: GCWorkoutId) {
+        return `${this.GC_API}/workout-service/schedule/${workoutId}`;
+    }
 }
 
 
